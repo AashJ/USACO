@@ -18,42 +18,70 @@ public class ariprog
         int n = sc.nextInt();
         int m = sc.nextInt();
 
-        List<Integer> squares2 = new ArrayList<Integer>();
+        int max = 2 * (m * m);
+
+        boolean[] goodNums = new boolean[(2 * m * m) + 1];
+
         for (int i = 0; i <= m; i++)
         {
             for (int k = 0; k <= m; k++)
             {
-                int square = (int) (Math.pow(i, 2) + Math.pow(k, 2));
-                if (!squares2.contains(square))
-                    squares2.add(square);
+                int square = (i * i) + (k * k);
+                goodNums[square] = true;
             }
         }
-        //List<Integer> squares2 = asSortedList(squares);
-        int counter = 0;
-        for (int diff = 1; diff <= (Math.pow(m, 2)); diff++)
+
+        List<int[]> answers = new ArrayList<int[]>();
+
+        for (int start = 0; start < max - 1; start++)
         {
-            for (int sq : squares2)
+            for (int difference = 1; difference <= (max - start) / (n - 1);
+                 difference++)
             {
-                boolean answer = true;
-                int c = sq;
-                for (int i = 0; i < n - 1; i++)
+                if (!goodNums[start])
                 {
-                    if (!squares2.contains(c + diff))
-                    {
-                        answer = false;
-                        break;
-                    }
-                    c += diff;
+                    break;
                 }
-                if (answer)
+                boolean good = true;
+                for (int current = 1; current < n; current++)
                 {
-                    pw.println(sq + " " + diff);
-                    counter++;
+                    if (!goodNums[start + difference * current])
+                    {
+                        good = false;
+                    }
+                }
+                if (good)
+                {
+                    answers.add(new int[] { start, difference });
                 }
             }
         }
 
-        if (counter == 0)
+        Collections.sort(answers, new Comparator<int[]>()
+        {
+            @Override public int compare(int[] o1, int[] o2)
+            {
+                if (o1[1] == o2[1])
+                {
+                    return o1[0] - o2[0];
+                }
+                else
+                {
+                    return o1[1] - o2[1];
+                }
+            }
+        });
+
+        if (answers.size() != 0)
+        {
+            for (int i = 0; i < answers.size(); i++)
+            {
+                int[] current = answers.get(i);
+
+                pw.println(current[0] + " " + current[1]);
+            }
+        }
+        else
         {
             pw.println("NONE");
         }
