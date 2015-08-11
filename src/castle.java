@@ -1,123 +1,107 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
 
+/*
+ID: 17aashi1
+TASK: castle
+LANG: JAVA
+ */
 public class castle
 {
-    private static Scanner sc;
     private static PrintWriter pw;
+    private static Scanner sc;
+    private static int numColumns;
     private static int numRows;
-    private static int numCols;
-    private static int[][] rooms;
-    private static boolean[][] seen;
-    private static int count = 0;
-
+    private static ArrayList<Room[]> edgeList = new ArrayList<Room[]>();
+    private static ArrayList<TotalRoom> roomList = new ArrayList<TotalRoom>();
     public static void main(String[] args) throws IOException
     {
-        sc = new Scanner(new File("castle.in"));
         pw = new PrintWriter(new File("castle.out"));
+        sc = new Scanner(new File("castle.in"));
 
-        numCols = sc.nextInt();
+        numColumns = sc.nextInt();
         numRows = sc.nextInt();
 
-        seen = new boolean[numRows][numCols];
-
-        rooms = new int[numRows][numCols];
-
-
-        for (int currentRow = 0; currentRow < numRows; currentRow++)
-        {
-            for (int currentColumn = 0; currentColumn < numCols;
-                 currentColumn++)
-            {
-                rooms[currentRow][currentColumn] = sc.nextInt();
-            }
-        }
-
-
-        for (int currentRow = 0; currentRow < numRows; currentRow++)
-        {
-            for (int currentColumn = 0; currentColumn < numCols;
-                 currentColumn++)
-            {
-                count = 0;
-                findSizes(currentRow, currentColumn);
-            }
-        }
+        populateEdgeList();
 
         System.out.println("debug");
 
+        for (Room[] r : edgeList)
+        {
+
+        }
+
     }
 
-    private static void findSizes(int row, int column)
+    public static void populateEdgeList()
     {
-        if (seen[row][column])
+        for (int curRow = 0; curRow < numRows; curRow++)
         {
-            return;
-        }
-        count++;
-        seen[row][column] = true;
-        int value = rooms[row][column];
-        if (value == 11)
-        {
-            findSizes(row, column + 1);
+            for (int curCol = 0; curCol < numColumns; curCol++)
+            {
+                int thisNum = sc.nextInt();
 
+                if (thisNum == 11 || thisNum == 3 || thisNum == 10 || thisNum
+                        == 9 || thisNum == 1 || thisNum == 8 || thisNum == 0)
+                {
+                    Room[] connected = new Room[2];
+                    connected[0] = new Room(curRow, curCol);
+                    connected[1] = new Room(curRow, curCol + 1);
+                    edgeList.add(connected);
+                }
+                if (thisNum == 6 || thisNum == 3 || thisNum == 7 || thisNum
+                        == 5 || thisNum == 0)
+                {
+                    Room[] connected = new Room[2];
+                    connected[0] = new Room(curRow, curCol);
+                    connected[1] = new Room(curRow + 1, curCol);
+                    edgeList.add(connected);
+                }
+            }
         }
-        else if (value == 6)
-        {
-            findSizes(row, column - 1);
-            findSizes(row + 1, column);
+    }
+}
 
-        }
-        else if (value == 3)
-        {
-            findSizes(row, column + 1);
-            findSizes(row + 1, column);
-        }
-        else if (value == 10)
-        {
-            findSizes(row, column + 1);
-            findSizes(row, column - 1);
-        }
-        else if (value == 7)
-        {
-            findSizes(row + 1, column);
-        }
-        else if (value == 9)
-        {
-            findSizes(row - 1, column);
-            findSizes(row, column + 1);
-        }
-        else if (value == 13)
-        {
-            findSizes(row - 1, column);
-        }
-        else if (value == 5)
-        {
-            findSizes(row + 1, column);
-            findSizes(row - 1, column);
-        }
-        else if (value == 1)
-        {
-            findSizes(row + 1, column);
-            findSizes(row - 1, column);
-            findSizes(row, column + 1);
-        }
-        else if (value == 12)
-        {
-            findSizes(row - 1, column);
-            findSizes(row, column - 1);
-        }
-        else if (value == 0)
-        {
-            findSizes(row + 1, column);
-            findSizes(row - 1, column);
-            findSizes(row, column + 1);
-            findSizes(row, column - 1);
-        }
-        rooms[row][column] = count;
+class Room
+{
+    private int row;
+    private int column;
+
+    public Room(int row, int column)
+    {
+        this.row = row;
+        this.column = column;
     }
 
+    public int getRow()
+    {
+        return row;
+    }
 
+    public int getColumn()
+    {
+        return column;
+    }
+}
+
+class TotalRoom
+{
+    private ArrayList<Room> allRooms = new ArrayList<Room>();
+    private int count = 0;
+
+
+
+    public void addRoom(Room r)
+    {
+        allRooms.add(r);
+        count++;
+    }
+
+    public ArrayList<Room> getAllRooms()
+    {
+        return allRooms;
+    }
 }
