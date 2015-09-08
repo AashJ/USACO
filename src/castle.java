@@ -1,107 +1,186 @@
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Scanner;
-
 /*
-ID: 17aashi1
-TASK: castle
-LANG: JAVA
+ ID: 17aashi1
+ LANG: JAVA
+ PROG: castle
  */
-public class castle
-{
-    private static PrintWriter pw;
-    private static Scanner sc;
-    private static int numColumns;
-    private static int numRows;
-    private static ArrayList<Room[]> edgeList = new ArrayList<Room[]>();
-    private static ArrayList<TotalRoom> roomList = new ArrayList<TotalRoom>();
-    public static void main(String[] args) throws IOException
-    {
-        pw = new PrintWriter(new File("castle.out"));
-        sc = new Scanner(new File("castle.in"));
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 
-        numColumns = sc.nextInt();
-        numRows = sc.nextInt();
+public class castle {
 
-        populateEdgeList();
+    int N;
+    int M;
+    Grid[][] map;
+    int[][] mark;
+    int count;
+    int[] record;
 
-        System.out.println("debug");
-
-        for (Room[] r : edgeList)
-        {
-
-        }
-
+    public static void main(String[] args) throws Exception {
+        castle main = new castle();
+        main.run();
+        System.exit(0);
     }
 
-    public static void populateEdgeList()
-    {
-        for (int curRow = 0; curRow < numRows; curRow++)
-        {
-            for (int curCol = 0; curCol < numColumns; curCol++)
-            {
-                int thisNum = sc.nextInt();
+    public void run() throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader("castle.in"));
+        BufferedWriter out = new BufferedWriter(new FileWriter("castle.out"));
+        String[] str = br.readLine().split("\\s");
+        M = Integer.parseInt(str[0]);
+        N = Integer.parseInt(str[1]);
+        map = new Grid[N][M];
+        mark = new int[N][M];
+        record = new int[N * M + 1];
+        count = 0;
+        for (int i = 0; i < N; i++) {
+            str = br.readLine().split("\\s");
+            for (int j = 0; j < M; j++)
+                map[i][j] = new Grid(Integer.parseInt(str[j]));
+        }
 
-                if (thisNum == 11 || thisNum == 3 || thisNum == 10 || thisNum
-                        == 9 || thisNum == 1 || thisNum == 8 || thisNum == 0)
-                {
-                    Room[] connected = new Room[2];
-                    connected[0] = new Room(curRow, curCol);
-                    connected[1] = new Room(curRow, curCol + 1);
-                    edgeList.add(connected);
-                }
-                if (thisNum == 6 || thisNum == 3 || thisNum == 7 || thisNum
-                        == 5 || thisNum == 0)
-                {
-                    Room[] connected = new Room[2];
-                    connected[0] = new Room(curRow, curCol);
-                    connected[1] = new Room(curRow + 1, curCol);
-                    edgeList.add(connected);
+        // printMap();
+
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
+                if (mark[i][j] == 0) {
+                    count++;
+                    record[count] = dfs(i, j);
                 }
             }
         }
+
+        // printRecord();
+        // printMark();
+
+        out.write(Integer.toString(count) + "\n");
+
+        int max = 0;
+
+        for (int i = 1; i <= count; i++)
+            max = Math.max(max, record[i]);
+        out.write(Integer.toString(max) + "\n");
+
+        int x = N - 1;
+        int y = 0;
+        char c = 'E';
+
+        for (int j = 0; j < M; j++) {
+            for (int i = N - 1; i >= 0; i--) {
+                if (map[i][j].n && i - 1 >= 0 && mark[i][j] != mark[i - 1][j]) {
+                    if (max < record[mark[i][j]] + record[mark[i - 1][j]]) {
+                        max = record[mark[i][j]] + record[mark[i - 1][j]];
+                        x = i;
+                        y = j;
+                        c = 'N';
+                    }
+                }
+                if (map[i][j].e && j + 1 < M && mark[i][j] != mark[i][j + 1]) {
+                    if (max < record[mark[i][j]] + record[mark[i][j + 1]]) {
+                        x = i;
+                        y = j;
+                        c = 'E';
+                        max = record[mark[i][j]] + record[mark[i][j + 1]];
+                    }
+                }
+
+            }
+        }
+
+        out.write(Integer.toString(max) + "\n");
+        out.write(Integer.toString(x + 1) + " " + Integer.toString(y + 1) + " "
+                + c + "\n");
+        out.close();
+    }
+
+    public int dfs(int x, int y) {
+        if (mark[x][y] != 0)
+            return 0;
+        mark[x][y] = count;
+        int cnt = 1;
+        if (!map[x][y].e && y + 1 < M)
+            cnt += dfs(x, y + 1);
+        if (!map[x][y].w && y > 0)
+            cnt += dfs(x, y - 1);
+        if (!map[x][y].s && x + 1 < N)
+            cnt += dfs(x + 1, y);
+        if (!map[x][y].n && x > 0)
+            cnt += dfs(x - 1, y);
+        return cnt;
+    }
+
+    public void printMap() {
+        for (int i = 0; i < N; i++)
+            for (int j = 0; j < M; j++) {
+                System.out.println("" + i + ", " + j);
+                if (map[i][j].n)
+                    System.out.println("###");
+                else
+                    System.out.println("# #");
+                if (map[i][j].w)
+                    System.out.print("#");
+                else
+                    System.out.print(' ');
+                System.out.print(' ');
+                if (map[i][j].e)
+                    System.out.println("#");
+                else
+                    System.out.println(' ');
+                if (map[i][j].s)
+                    System.out.println("###");
+                else
+                    System.out.println("# #");
+                System.out.println();
+            }
+    }
+
+    private void printRecord() {
+        for (int i = 0; i <= count; i++)
+            System.out.println(record[i]);
+    }
+
+    private void printMark() {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++)
+                System.out.print("" + mark[i][j]);
+            System.out.println();
+        }
     }
 }
 
-class Room
-{
-    private int row;
-    private int column;
+class Grid {
+    public boolean e;
+    public boolean n;
+    public boolean w;
+    public boolean s;
 
-    public Room(int row, int column)
-    {
-        this.row = row;
-        this.column = column;
-    }
+    public Grid(int mask) {
+        // North
+        if (mask >= 8) {
+            s = true;
+            mask -= 8;
+        } else
+            s = false;
 
-    public int getRow()
-    {
-        return row;
-    }
+        // East;
+        if (mask >= 4) {
+            e = true;
+            mask -= 4;
+        } else
+            e = false;
 
-    public int getColumn()
-    {
-        return column;
-    }
-}
+        // North;
+        if (mask >= 2) {
+            n = true;
+            mask -= 2;
+        } else
+            n = false;
 
-class TotalRoom
-{
-    private ArrayList<Room> allRooms = new ArrayList<Room>();
-    private int count = 0;
-
-
-
-    public void addRoom(Room r)
-    {
-        allRooms.add(r);
-        count++;
-    }
-
-    public ArrayList<Room> getAllRooms()
-    {
-        return allRooms;
+        // West;
+        if (mask >= 1) {
+            w = true;
+            mask -= 1;
+        } else
+            w = false;
     }
 }
